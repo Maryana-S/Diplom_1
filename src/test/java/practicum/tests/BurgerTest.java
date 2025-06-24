@@ -1,6 +1,7 @@
 package practicum.tests;
 
 import net.bytebuddy.utility.RandomString;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,11 +16,12 @@ import java.util.List;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BurgerTest {
+
+    SoftAssertions softAssertions;
 
     Burger burger;
 
@@ -45,6 +47,8 @@ public class BurgerTest {
 
     @Before
     public void initParams() {
+        softAssertions = new SoftAssertions();
+
         burger = new Burger();
 
         bunName = RandomString.make(5) + " bun";
@@ -66,8 +70,13 @@ public class BurgerTest {
 
         burger.setBuns(bun);
 
-        assertEquals("Значение name не соответствует ожидаемому", bunName, burger.bun.getName());
-        assertEquals("Значение price не соответствует ожидаемому", bunPrice, burger.bun.getPrice(), 0.0f);
+        softAssertions.assertThat(burger.bun.getName())
+                .withFailMessage("Значение name не соответствует ожидаемому '%s'", bunName)
+                .isEqualTo(bunName);
+        softAssertions.assertThat(burger.bun.getPrice())
+                .withFailMessage("Значение price не соответствует ожидаемому '%s'", bunPrice)
+                .isEqualTo(bunPrice);
+        softAssertions.assertAll();
     }
 
     @Test
@@ -79,19 +88,27 @@ public class BurgerTest {
         List<Ingredient> ingredients = burger.ingredients;
         burger.addIngredient(ingredientFilling);
 
-        assertEquals("Размер массива ingredients не соответствует ожидаемому", 1, ingredients.size());
-        assertEquals("Значение name не соответствует ожидаемому", ingredientFillingName, ingredients.get(0).getName());
-        assertEquals("Значение price не соответствует ожидаемому", ingredientFillingPrice, ingredients.get(0).getPrice(), 0.0f);
-        assertEquals("Значение type не соответствует ожидаемому", ingredientFillingType, ingredients.get(0).getType());
+        softAssertions.assertThat(ingredients.size())
+                .withFailMessage("Размер массива ingredients не соответствует ожидаемому'")
+                .isEqualTo(1);
+        softAssertions.assertThat(ingredients.get(0).getName())
+                .withFailMessage("Значение name не соответствует ожидаемому '%s'", ingredientFillingName)
+                .isEqualTo(ingredientFillingName);
+        softAssertions.assertThat(ingredients.get(0).getPrice())
+                .withFailMessage("Значение price не соответствует ожидаемому '%s'", ingredientFillingPrice)
+                .isEqualTo(ingredientFillingPrice);
+        softAssertions.assertThat(ingredients.get(0).getType())
+                .withFailMessage("Значение type не соответствует ожидаемому")
+                .isEqualTo(ingredientFillingType);
+        softAssertions.assertAll();
     }
 
     @Test
     public void removeIngredientFromIngredientsSuccessTest() {
         List<Ingredient> ingredients = burger.ingredients;
         burger.addIngredient(ingredientFilling);
-        assertEquals("Ингредиент не добавился в список",1, ingredients.size());
-
         burger.removeIngredient(0);
+
         assertEquals("Ингредиент не удалился из списка", 0, ingredients.size());
     }
 
@@ -104,8 +121,13 @@ public class BurgerTest {
 
         burger.moveIngredient(0, 1);
 
-        assertEquals("Первое значение в списке ingredients не соответствует ожидаемому", ingredientSauceName, burger.ingredients.get(0).getName());
-        assertEquals("Второе значение в списке ingredients не соответствует ожидаемому", ingredientFillingName, burger.ingredients.get(1).getName());
+        softAssertions.assertThat(burger.ingredients.get(0).getName())
+                .withFailMessage("Первое значение в списке ingredients не соответствует ожидаемому")
+                .isEqualTo(ingredientSauceName);
+        softAssertions.assertThat(burger.ingredients.get(1).getName())
+                .withFailMessage("Второе значение в списке ingredients не соответствует ожидаемому")
+                .isEqualTo(ingredientFillingName);
+        softAssertions.assertAll();
     }
 
     @Test
@@ -127,11 +149,19 @@ public class BurgerTest {
 
         String receipt = burger.getReceipt();
 
-        assertTrue("Ожидаемая строка отсутствует в чеке", receipt.contains(String.format("(==== %s ====)%n", bun.getName())));
-        assertTrue("Ожидаемая строка отсутствует в чеке", receipt.contains(String.format("= %s %s =%n", ingredientFilling.getType().toString().toLowerCase(), ingredientFilling.getName())));
-        assertTrue("Ожидаемая строка отсутствует в чеке", receipt.contains(String.format("= %s %s =%n", ingredientSauce.getType().toString().toLowerCase(), ingredientSauce.getName())));
-        assertTrue("Ожидаемая строка отсутствует в чеке", receipt.contains(String.format("%nPrice: %f%n", bun.getPrice() * 2 + ingredientFilling.getPrice() + ingredientSauce.getPrice())));
-
+        softAssertions.assertThat(receipt)
+                .withFailMessage("Ожидаемая строка отсутствует в чеке")
+                .contains(String.format("(==== %s ====)%n", bun.getName()));
+        softAssertions.assertThat(receipt)
+                .withFailMessage("Ожидаемая строка отсутствует в чеке")
+                .contains(String.format("= %s %s =%n", ingredientFilling.getType().toString().toLowerCase(), ingredientFilling.getName()));
+        softAssertions.assertThat(receipt)
+                .withFailMessage("Ожидаемая строка отсутствует в чеке")
+                .contains(String.format("= %s %s =%n", ingredientSauce.getType().toString().toLowerCase(), ingredientSauce.getName()));
+        softAssertions.assertThat(receipt)
+                .withFailMessage("Ожидаемая строка отсутствует в чеке")
+                .contains(String.format("%nPrice: %f%n", bun.getPrice() * 2 + ingredientFilling.getPrice() + ingredientSauce.getPrice()));
+        softAssertions.assertAll();
     }
 
 }
